@@ -32,19 +32,18 @@ inquirer
         choices: [
             "Start Server",
             "Plugins Menu",
-            "PenguiPanel Options",
-            "Port Forwarding Setup"
+            "PenguiPanel Options"
         ]
     })
     .then((answers) => {
         if(answers.menuopts === "Start Server") {
             startServer();
         }
-        if(answers.menuopts === "Port Forwarding Setup") {
-            portForwarding();
-        }
         if(answers.menuopts === "Plugins Menu") {
             pluginsMenu();
+        }
+        if(answers.menuopts === "PenguiPanel Options") {
+            penguipanelOpts();
         }
     });
 
@@ -63,91 +62,79 @@ Welcome to PenguiPanel Server Creation Wizard!
 By creating a server with the help of this software, you agree to the Minecraft EULA (https://www.minecraft.net/en-us/eula)
 `);
 
-    inquirer
-        .prompt([
-            {
-                type: "list",
-                name: "softwarechoice",
-                message: "Select a server software.",
-                choices: [
-                    "Paper",
-                    "Purpur",
-                    "Vanilla"
-                ]
-            },
-            {
-                type: "input",
-                name: "versionchoice",
-                message: "Enter a version (can be 'latest')."
-            },
-            {
-                type: "input",
-                name: "ramamount",
-                message: "How much ram should be allocated? (default 2048)"
+inquirer
+    .prompt([
+        {
+            type: "list",
+            name: "softwarechoice",
+            message: "Select a server software.",
+            choices: [
+                "Paper",
+                "Purpur",
+                "Vanilla",
+                "MohistMC"
+            ]
+        },
+        {
+            type: "input",
+            name: "versionchoice",
+            message: "Enter a version (can be 'latest')."
+        },
+        {
+            type: "input",
+            name: "ramamount",
+            message: "How much ram should be allocated? (default 2048)"
+        }
+    ])
+    .then((answers) => {
+        if(!answers.versionchoice || !answers.ramamount) {
+            return console.log("\x1b[31m", "The version and amount of RAM is required.") 
+        }
+
+
+        if(isNaN(parseInt(answers.ramamount))) {
+            return console.log("\x1b[31m", "The RAM amount must be a number!")
+        }
+
+        answers.softwarechoice = answers.softwarechoice.toLowerCase();
+
+        url = `https://mc-srv-dl-api.pingwinco.xyz/download/${answers.softwarechoice}/${answers.versionchoice}/latest`;
+
+        fs.mkdirSync(path.join(process.cwd(), "/PenguiPanelFiles"));
+
+        fs.mkdirSync(path.join(process.cwd(), "/PenguiPanelFiles/ServerFiles"));
+    
+        fs.writeFileSync(path.join(process.cwd(), "/PenguiPanelFiles/PenguiPanelConfig.json"), "{}", "utf8");
+
+        fs.writeFileSync(path.join(process.cwd(), "/PenguiPanelFiles/ServerFiles/eula.txt"), "eula=true", "utf8");
+
+        fs.readFile(path.join(process.cwd(), "/PenguiPanelFiles/PenguiPanelConfig.json"), (err, data) => {
+            if(err) {
+                console.log("\x1b[31m", `Oops! An error has occurred: ${err}.`);
             }
-        ])
-        .then((answers) => {
-            if(!answers.versionchoice || !answers.ramamount) {
-                return console.log("\x1b[31m", "The version and amount of RAM is required.") 
-            }
-
-
-            if(isNaN(parseInt(answers.ramamount))) {
-                return console.log("\x1b[31m", "The RAM amount must be a number!")
-            }
-
-            answers.softwarechoice = answers.softwarechoice.toLowerCase();
-
-            fetch(`https://mc-srv-dl-api.pingwinco.xyz/download?software=${answers.softwarechoice}&version=${answers.versionchoice}&build=latest`)
-            .then(results => results.json())
-            .then(data => {
-                if(answers.versionchoice === "latest") {
-                    answers.versionchoice = data.version;
-                }
-
-                if(data.error === true) {
-                    return console.log("\x1b[31m", `Oops! An error has occurred: ${data.message}.`);
-                }
-
-                fs.mkdirSync(path.join(process.cwd(), "/PenguiPanelFiles"));
-
-                fs.mkdirSync(path.join(process.cwd(), "/PenguiPanelFiles/ServerFiles"));
     
-                fs.writeFileSync(path.join(process.cwd(), "/PenguiPanelFiles/PenguiPanelConfig.json"), "{}", "utf8");
-
-                fs.writeFileSync(path.join(process.cwd(), "/PenguiPanelFiles/ServerFiles/eula.txt"), "eula=true", "utf8");
-
-                fs.readFile(path.join(process.cwd(), "/PenguiPanelFiles/PenguiPanelConfig.json"), (err, data) => {
-                    if(err) {
-                        console.log("\x1b[31m", `Oops! An error has occurred: ${err}. Press any key to continue...`);
-                        process.stdin.setRawMode(true);
-                        process.stdin.resume();
-                        process.stdin.on("data", process.exit.bind(process, 0));
-                    }
+            let contents = JSON.parse(data);
     
-                    let contents = JSON.parse(data);
+            contents.software = answers.softwarechoice;
+            contents.version = answers.versionchoice;
+            contents.ram = answers.ramamount;
     
-                    contents.software = answers.softwarechoice;
-                    contents.version = answers.versionchoice;
-                    contents.ram = answers.ramamount;
-    
-                    fs.writeFileSync(path.join(process.cwd(), "/PenguiPanelFiles/PenguiPanelConfig.json"), JSON.stringify(contents, null, 2));
-                });
+            fs.writeFileSync(path.join(process.cwd(), "/PenguiPanelFiles/PenguiPanelConfig.json"), JSON.stringify(contents, null, 2));
+        });
 
-                console.log(`Downloading ${answers.softwarechoice}...`);
+        console.log(`Downloading ${answers.softwarechoice}...`);
 
-                const file = fs.createWriteStream(path.join(process.cwd(), "/PenguiPanelFiles/ServerFiles/server.jar"));
-                const request = https.get(data.download, (response) => {
-                    response.pipe(file);
+        const file = fs.createWriteStream(path.join(process.cwd(), "/PenguiPanelFiles/ServerFiles/server.jar"));
+        const request = https.get(url, (response) => {
+            response.pipe(file);
 
-                    file.on("finish", () => {
-                        file.close();
-                        console.log("Finished Downloading The Server!");
-                        mainMenu();
-                    });
-                });
+            file.on("finish", () => {
+                file.close();
+                console.log("Finished Downloading The Server!");
+                mainMenu();
             });
         });
+    });
 }
 
 function startServer() {
@@ -160,10 +147,7 @@ function startServer() {
         } else {
             fs.readFile(path.join(process.cwd(), "/PenguiPanelFiles/PenguiPanelConfig.json"), async (err, data) => {
                 if(err) {
-                    console.log("\x1b[31m", `Oops! An error has occurred: ${err}. Press any key to continue...`);
-                    process.stdin.setRawMode(true);
-                    process.stdin.resume();
-                    process.stdin.on("data", process.exit.bind(process, 0));
+                    console.log("\x1b[31m", `Oops! An error has occurred: ${err}.`);
                 }
 
                 let contents = JSON.parse(data);
@@ -175,47 +159,77 @@ function startServer() {
                 }
 
                 server = exec(`cd ${path.join(process.cwd(), "/PenguiPanelFiles/ServerFiles")} && java -Xmx${contents.ram}M -Xms${contents.ram}M -jar server.jar`);   
-                console.log("\x1b[32m", "The server is starting! A pop-up menu will appear soon. Logs will also appear here.");
+                console.log("\x1b[32m", "The server is starting! A pop-up menu will appear soon. Server statistics will appear here.");
+
+                let playerCount = 0;
+                console.log(`Players online: ${playerCount}`);
 
                 server.stdout.on("data", (data) => {
-                    console.log("\x1b[33m", data);
+                    //Handle statistics
+                    if (data.includes("joined the game")) {
+                        playerCount++;
+                        updatePlayerCount();
+                    }
+                
+                    if (data.includes("left the game")) {
+                        playerCount--;
+                        updatePlayerCount();
+                    }
                 });
+
+                function updatePlayerCount() {
+                    process.stdout.write("\x1b[F\x1b[K");
+                    console.log(`Players online: ${playerCount}`);
+                }
             });
         }
-    });
-
+  });
 }
 
-function portForwarding() {
+function penguipanelOpts() {
     inquirer
-    .prompt({
-        type: "input",
-        name: "ngroktoken",
-        message: "Enter your Ngrok authentication token.",
-    })
-    .then((answers) => {
-        fs.readFile(path.join(process.cwd(), "/PenguiPanelFiles/PenguiPanelConfig.json"), (err, data) => {
-            if(err) {
-                console.log("\x1b[31m", `Oops! An error has occurred: ${err}. Press any key to continue...`);
-                process.stdin.setRawMode(true);
-                process.stdin.resume();
-                process.stdin.on("data", process.exit.bind(process, 0));
+        .prompt({
+            type: "list",
+            name: "settingsmenu",
+            message: "Please select an option:",
+            choices: [
+                "Set-Up Port Forwarding",
+                "Backup To Drive/Upload Backup",
+                "Change amount of ram allocated",
+                "Check for updates"
+            ]
+        })
+        .then((answers) => {
+            if(answers.settingsmenu === "Set-Up Port Forwarding") {
+                portForwardingSetup();
             }
-
-            let contents = JSON.parse(data);
-
-            contents.ngrok = answers.ngroktoken;
-
-            fs.writeFileSync(path.join(process.cwd(), "/PenguiPanelFiles/PenguiPanelConfig.json"), JSON.stringify(contents, null, 2));
-
-            mainMenu();
         });
-    });
+}
+
+function portForwardingSetup() {
+    inquirer
+        .prompt({
+            type: "input",
+            name: "ngroktoken",
+            message: "Enter your Ngrok authentication token.",
+        })
+        .then((answers) => {
+            fs.readFile(path.join(process.cwd(), "/PenguiPanelFiles/PenguiPanelConfig.json"), (err, data) => {
+                if(err) {
+                    console.log("\x1b[31m", `Oops! An error has occurred: ${err}.`);
+                }
+
+                let contents = JSON.parse(data);
+
+                contents.ngrok = answers.ngroktoken;
+
+                fs.writeFileSync(path.join(process.cwd(), "/PenguiPanelFiles/PenguiPanelConfig.json"), JSON.stringify(contents, null, 2));
+
+                mainMenu();
+            });
+        });
 }
 
 function pluginsMenu() {
-    console.log("\x1b[32m", "Welcome to the PenguiPanel plugins menu!\n Powered by Spiget and the Modrinth API. Coming soon! Press any key to continue...");
-    process.stdin.setRawMode(true);
-    process.stdin.resume();
-    process.stdin.on("data", process.exit.bind(process, 0));
+    console.log("\x1b[32m", "Welcome to the PenguiPanel plugins menu!\n Powered by Paper Hangar and Spiget.");
 }
