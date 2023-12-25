@@ -1,6 +1,6 @@
 const inquirer = require("inquirer");
 const ngrok = require("ngrok");
-const https = require("https");
+const https = require("follow-redirects").https;
 const path = require("path");
 const fs = require("fs");
 const { exec } = require("child_process");
@@ -123,6 +123,9 @@ function startServer() {
     });
 
     server.stdout.on("data", (data) => {
+        if(data.includes("Done")) {
+            server.stdin.write("tps\n");
+        }
         if (data.includes("joined the game")) {
             stats.playersOnline++;
         }

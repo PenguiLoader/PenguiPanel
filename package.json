@@ -9,6 +9,7 @@
   "author": "Aleksander Wegrzyn",
   "license": "ISC",
   "dependencies": {
+    "follow-redirects": "^1.15.3",
     "inquirer": "^8.2.5",
     "install": "^0.13.0",
     "ngrok": "^5.0.0-beta.2",
