@@ -75,7 +75,7 @@ function createServer() {
         },
         {
             type: "input",
-            name: "versionchoice",
+            name: "version",
             message: "Enter a version (can be 'latest')."
         },
         {
@@ -84,8 +84,8 @@ function createServer() {
             message: "How much ram should be allocated? (default 2048)"
         }
     ]).then(answers => {
-        if(!answers.versionchoice) exit();
-        let url = `https://mc-srv-dl-api.pingwinco.xyz/download/${answers.softwarechoice.toLowerCase()}/${answers.versionchoice}/latest`;
+        if(!answers.version) exit();
+        let url = `https://mc-srv-dl-api.pingwinco.xyz/download/${answers.software.toLowerCase()}/${answers.version}/latest`;
 
         fs.mkdirSync(path.join(process.cwd(), "/PenguiPanelFiles"));
         fs.mkdirSync(path.join(process.cwd(), "/PenguiPanelFiles/ServerFiles"));
