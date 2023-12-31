@@ -26,15 +26,15 @@ Now, to join the server. Since the server is running locally on your machine, it
 1. Go to https://ngrok.com and create an account.
 2. In the side panel, Go to Getting Started > Your Authtoken and copy your Authtoken.
 3. In PenguiPanel, Go to PenguiPanel Options > Set-Up Port Forwarding.
-4. Right Click to pate in your Authtoken when prompted.
+4. Right Click to paste in your Authtoken when prompted.
 5. You're Done! Every time you turn on the server the public IP will be displayed in the statistics table.
 
-⚠ Also, Ngrok provides **Dynamic IP Addresses**. This means that the IP address changes every single time. EDIT: Since Ngrok has added the domains feature, which allows 1 free domain for non-paid users, we will be experimenting with static IPs soon!
+⚠ Also, Ngrok provides **Dynamic IP Addresses**. This means that the IP address changes every single time you restart the server. EDIT: Since Ngrok has added the domains feature, which allows 1 free domain for non-paid users, we will be experimenting with static IPs soon!
 
 # FAQ
 
 ## Why can I not join my Minecraft Server?
 
-This is likely because it has not yet started. Especially if this is the first time you are starting a server, some times it can take a while to set everything up. You can check this by looking at your statistics table where the "Ready" parameter will be set to true if the server has done loading.
+This is likely because it has not yet started. Especially if this is the first time you are starting a server, sometimes it can take a while to set everything up. You can check this by looking at your statistics table where the "Ready" parameter will be set to true if the server has done loading.
 
 This could also be a port forwarding issue. Check your manual/ngrok configuration and be sure not to use old ngrok dynamic IPs!
